@@ -58,6 +58,22 @@ export async function joinWaitlist(
   _prevState: SignupState,
   formData: FormData,
 ): Promise<SignupState> {
+  /* Vangnet: wat er ook misgaat, de bezoeker krijgt een leesbare melding en
+     wij een logregel. Zonder dit levert een onverwachte fout een kale
+     "Internal Server Error" op waar niemand iets aan heeft. */
+  try {
+    return await handleSignup(formData);
+  } catch (error) {
+    console.error("[spotter] Onverwachte fout in joinWaitlist:", error);
+    return {
+      status: "error",
+      message:
+        "Aanmelden lukt nu even niet. Probeer het later opnieuw of mail ons direct.",
+    };
+  }
+}
+
+async function handleSignup(formData: FormData): Promise<SignupState> {
   const email = String(formData.get("email") ?? "").trim();
 
   if (email.length === 0) {
@@ -87,16 +103,21 @@ export async function joinWaitlist(
     };
   }
 
-  const port = Number(SMTP_PORT ?? 465);
-
-  const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port,
-    secure: port === 465, // 465 = SSL, 587 = STARTTLS
-    auth: { user: SMTP_USER, pass: SMTP_PASSWORD },
-  });
+  /* Number("") is 0 en Number("abc") is NaN — allebei een onbruikbare poort
+     die verderop een harde crash oplevert. Val dan terug op 465. */
+  const parsedPort = Number(SMTP_PORT);
+  const port = Number.isInteger(parsedPort) && parsedPort > 0 ? parsedPort : 465;
 
   try {
+    // createTransport hoort binnen de try: gooit hij, dan is dat een nette
+    // foutmelding en geen 500 waar de bezoeker niets aan heeft.
+    const transporter = nodemailer.createTransport({
+      host: SMTP_HOST,
+      port,
+      secure: port === 465, // 465 = SSL, 587 = STARTTLS
+      auth: { user: SMTP_USER, pass: SMTP_PASSWORD },
+    });
+
     await transporter.sendMail({
       from: `"Spotter aanmeldingen" <${SMTP_USER}>`,
       to: SIGNUP_NOTIFY_TO,
@@ -111,7 +132,7 @@ export async function joinWaitlist(
       "[spotter] config —",
       [
         `host: ${SMTP_HOST}`,
-        `poort: ${port} (secure: ${port === 465})`,
+        `poort: ${port} (secure: ${port === 465}, ruwe waarde: ${JSON.stringify(process.env.SMTP_PORT)})`,
         `user: ${SMTP_USER}`,
         describe("SMTP_PASSWORD"),
         describe("SMTP_USER"),
