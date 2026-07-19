@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# het voorbeeldbestand mag wel mee — daar staan geen echte gegevens in
+!.env.example
 
 # vercel
 .vercel
