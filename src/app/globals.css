@@ -22,6 +22,16 @@
 
   --color-primary: var(--color-primary-500);
 
+  /* --- Accent: zachtere koraal voor de primaire CTA (hue 359°) -----------
+     Minder fel dan het merkoranje. Draagt donkere labels, geen witte:
+     wit haalt hierop maar 2,9:1, #191B24 haalt 5,9:1. */
+  --color-accent-100: #ffd9da;
+  --color-accent-200: #ffb0b2;
+  --color-accent-300: #ff8b8d;
+  --color-accent-500: #ff6467; /* CTA-vulling — 5,94:1 met ink-900        */
+  --color-accent-600: #fa5559; /* hover        — 5,32:1                    */
+  --color-accent-700: #f24347; /* active       — 4,63:1                    */
+
   /* --- Ink: tekstschaal, afgeleid van #191B24 --------------------------- */
   --color-ink-950: #0f1117; /* donkere secties                              */
   --color-ink-900: #191b24; /* bodytekst — 15.9:1 op wit                    */
@@ -67,7 +77,7 @@
   --shadow-md: 0 4px 6px rgb(25 27 36 / 0.08);
   --shadow-lg: 0 10px 24px rgb(25 27 36 / 0.1);
   --shadow-xl: 0 20px 40px rgb(25 27 36 / 0.14);
-  --shadow-glow: 0 12px 32px rgb(255 69 2 / 0.28);
+  --shadow-glow: 0 12px 32px rgb(255 100 103 / 0.34); /* volgt de CTA-kleur */
 
   /* --- Motion: één ritme voor alles -------------------------------------- */
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
@@ -171,22 +181,21 @@
     transform: none;
   }
 
-  /* Primair: primary-600 als vlak = 4.55:1 met witte tekst (AA).
-     De pure merkkleur #ff4502 haalt met wit maar 3.4:1 en is daarom
-     gereserveerd voor accenten, iconen en grote tekst. */
+  /* Primair: zachte koraal met een donker label = 5,94:1 (AA).
+     Witte tekst kan hier niet — die haalt op #ff6467 maar 2,89:1. */
   .btn-primary {
-    background-color: var(--color-primary-600);
-    color: #ffffff;
+    background-color: var(--color-accent-500);
+    color: var(--color-ink-900);
     box-shadow: var(--shadow-glow);
   }
 
   .btn-primary:hover:not(:disabled) {
-    background-color: var(--color-primary-700);
+    background-color: var(--color-accent-600);
     transform: translateY(-2px);
   }
 
   .btn-primary:active:not(:disabled) {
-    background-color: var(--color-primary-800);
+    background-color: var(--color-accent-700);
     transform: translateY(0);
   }
 
