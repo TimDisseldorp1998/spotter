@@ -12,13 +12,41 @@ export type SignupState = {
 
 /* SMTP-gegevens komen uit de omgeving, nooit uit de code.
    Zie .env.example voor welke variabelen je moet zetten. */
-const {
-  SMTP_HOST,
-  SMTP_PORT,
-  SMTP_USER,
-  SMTP_PASSWORD,
-  SIGNUP_NOTIFY_TO,
-} = process.env;
+
+/**
+ * Haalt een omgevingsvariabele op en haalt er rommel af die je bij plakken
+ * zo oppikt: spaties eromheen en aanhalingstekens die mee zijn gekopieerd.
+ * Een mailserver weigert daarop zonder te zeggen wat er mis is.
+ */
+function readEnv(name: string): string | undefined {
+  const raw = process.env[name];
+  if (raw === undefined) return undefined;
+
+  const cleaned = raw.trim().replace(/^(['"])([\s\S]*)\1$/, "$2");
+  return cleaned;
+}
+
+const SMTP_HOST = readEnv("SMTP_HOST");
+const SMTP_PORT = readEnv("SMTP_PORT");
+const SMTP_USER = readEnv("SMTP_USER");
+const SMTP_PASSWORD = readEnv("SMTP_PASSWORD");
+const SIGNUP_NOTIFY_TO = readEnv("SIGNUP_NOTIFY_TO");
+
+/**
+ * Beschrijft een waarde zonder hem prijs te geven: lengte en of er iets
+ * afgehaald moest worden. Genoeg om een plakfout te herkennen, te weinig
+ * om het wachtwoord uit de logs te vissen.
+ */
+function describe(name: string): string {
+  const raw = process.env[name];
+  if (raw === undefined) return `${name}: ONTBREEKT`;
+
+  const cleaned = readEnv(name) ?? "";
+  const notes: string[] = [`${cleaned.length} tekens`];
+  if (raw !== raw.trim()) notes.push("had spaties eromheen");
+  if (/^['"]|['"]$/.test(raw.trim())) notes.push("had aanhalingstekens");
+  return `${name}: ${notes.join(", ")}`;
+}
 
 /**
  * Aanmelden voor de bèta. Stuurt het adres als mailtje naar SIGNUP_NOTIFY_TO.
@@ -78,6 +106,17 @@ export async function joinWaitlist(
     });
   } catch (error) {
     console.error("[spotter] Versturen van de aanmelding mislukt:", error);
+    // Geen wachtwoorden in de logs, alleen genoeg om een plakfout te zien.
+    console.error(
+      "[spotter] config —",
+      [
+        `host: ${SMTP_HOST}`,
+        `poort: ${port} (secure: ${port === 465})`,
+        `user: ${SMTP_USER}`,
+        describe("SMTP_PASSWORD"),
+        describe("SMTP_USER"),
+      ].join(" | "),
+    );
     return {
       status: "error",
       message:
