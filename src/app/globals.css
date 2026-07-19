@@ -1,0 +1,454 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Spotter — design tokens
+   Huisstijl is vast: #ff4502 (primair), #191B24 (tekst), #ffffff (achtergrond).
+   Alles hieronder is daaromheen gebouwd: tints/shades, semantische tokens,
+   en state-varianten. Geen losse hex in componenten.
+   ========================================================================== */
+
+@theme {
+  /* --- Merk: oranje schaal, afgeleid van #ff4502 (hue 16°) --------------- */
+  --color-primary-50: #fff3ed;
+  --color-primary-100: #ffe2d3;
+  --color-primary-200: #ffc2a6;
+  --color-primary-300: #ff9a70;
+  --color-primary-400: #ff6e33;
+  --color-primary-500: #ff4502; /* merkkleur — accenten, iconen, grote tekst */
+  --color-primary-600: #db3a00; /* vlakken met witte tekst — 4.55:1 (AA)    */
+  --color-primary-700: #b22f00; /* hover                                    */
+  --color-primary-800: #8a2400; /* active                                   */
+  --color-primary-900: #6b1d00;
+
+  --color-primary: var(--color-primary-500);
+
+  /* --- Ink: tekstschaal, afgeleid van #191B24 --------------------------- */
+  --color-ink-950: #0f1117; /* donkere secties                              */
+  --color-ink-900: #191b24; /* bodytekst — 15.9:1 op wit                    */
+  --color-ink-800: #2b2e3a;
+  --color-ink-700: #3d4150;
+  --color-ink-600: #4d5162;
+  --color-ink-500: #5c6070; /* muted tekst — 6.2:1 op wit                   */
+  --color-ink-400: #8a8f9e; /* alleen grote/decoratieve tekst               */
+  --color-ink-300: #b9bdc9;
+  --color-ink-200: #dcdee6;
+  --color-ink-100: #eeeff3;
+  --color-ink-50: #f7f7f9;
+
+  /* --- Semantische tokens ----------------------------------------------- */
+  --color-background: #ffffff;
+  --color-foreground: var(--color-ink-900);
+  --color-surface: #ffffff;
+  --color-surface-subtle: var(--color-ink-50);
+  --color-surface-sunken: var(--color-ink-100);
+  --color-surface-inverse: var(--color-ink-950);
+  --color-muted: var(--color-ink-500);
+  --color-muted-inverse: #a8aebf; /* 8.5:1 op ink-950                       */
+  --color-border: #e4e4ea;
+  --color-border-strong: #cdcdd6;
+
+  --color-success: #0e7a45;
+  --color-success-surface: #e8f6ee;
+  --color-warning: #9a5b00;
+  --color-warning-surface: #fdf3e3;
+  --color-danger: #c81e1e;
+  --color-danger-surface: #fdeced;
+  --color-ring: var(--color-primary-600);
+
+  /* --- Typografie (skill: Barlow Condensed / Barlow) -------------------- */
+  --font-display: var(--font-barlow-condensed), "Barlow Condensed", sans-serif;
+  --font-sans: var(--font-barlow), "Barlow", system-ui, sans-serif;
+
+  /* --- Radii & elevatie -------------------------------------------------- */
+  --radius-card: 1.25rem;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgb(25 27 36 / 0.05);
+  --shadow-md: 0 4px 6px rgb(25 27 36 / 0.08);
+  --shadow-lg: 0 10px 24px rgb(25 27 36 / 0.1);
+  --shadow-xl: 0 20px 40px rgb(25 27 36 / 0.14);
+  --shadow-glow: 0 12px 32px rgb(255 69 2 / 0.28);
+
+  /* --- Motion: één ritme voor alles -------------------------------------- */
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-overshoot: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* Losse custom properties (geen Tailwind-utility nodig) */
+:root {
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-slow: 400ms;
+  --border-inverse: rgb(255 255 255 / 0.12);
+}
+
+/* ==========================================================================
+   Basis
+   ========================================================================== */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* voorkomt dat de sticky header ankers afdekt */
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: 1rem; /* 16px — geen iOS auto-zoom */
+    line-height: 1.6;
+    overflow-x: clip;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  /* Zichtbare focus voor toetsenbordgebruikers — nooit weghalen */
+  :focus-visible {
+    outline: 3px solid var(--color-ring);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .on-dark :focus-visible {
+    outline-color: var(--color-primary-400);
+  }
+
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+
+  ::selection {
+    background-color: var(--color-primary-500);
+    color: #ffffff;
+  }
+}
+
+/* ==========================================================================
+   Componentklassen
+   ========================================================================== */
+
+@layer components {
+  /* --- Knoppen ----------------------------------------------------------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 48px; /* touch target */
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition:
+      background-color var(--duration-base) var(--ease-out-soft),
+      color var(--duration-base) var(--ease-out-soft),
+      border-color var(--duration-base) var(--ease-out-soft),
+      box-shadow var(--duration-base) var(--ease-out-soft),
+      transform var(--duration-base) var(--ease-out-soft);
+  }
+
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+
+  /* Primair: primary-600 als vlak = 4.55:1 met witte tekst (AA).
+     De pure merkkleur #ff4502 haalt met wit maar 3.4:1 en is daarom
+     gereserveerd voor accenten, iconen en grote tekst. */
+  .btn-primary {
+    background-color: var(--color-primary-600);
+    color: #ffffff;
+    box-shadow: var(--shadow-glow);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-primary-700);
+    transform: translateY(-2px);
+  }
+
+  .btn-primary:active:not(:disabled) {
+    background-color: var(--color-primary-800);
+    transform: translateY(0);
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--color-ink-900);
+    border: 2px solid var(--color-border-strong);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    border-color: var(--color-ink-900);
+    background-color: var(--color-surface-subtle);
+  }
+
+  .btn-secondary:active:not(:disabled) {
+    background-color: var(--color-surface-sunken);
+  }
+
+  .on-dark .btn-secondary {
+    color: #ffffff;
+    border-color: rgb(255 255 255 / 0.28);
+  }
+
+  .on-dark .btn-secondary:hover:not(:disabled) {
+    border-color: #ffffff;
+    background-color: rgb(255 255 255 / 0.08);
+  }
+
+  /* --- Glassmorphism ------------------------------------------------------
+     Alleen op donkere/gekleurde ondergrond, zodat tekstcontrast klopt.
+     Zonder backdrop-filter-support wordt het vlak dekkender i.p.v. vaag. */
+  .glass {
+    background-color: rgb(255 255 255 / 0.12);
+    border: 1px solid rgb(255 255 255 / 0.14);
+    border-radius: var(--radius-card);
+  }
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass {
+      background-color: rgb(255 255 255 / 0.07);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      backdrop-filter: blur(16px) saturate(140%);
+    }
+  }
+
+  .glass-light {
+    background-color: rgb(255 255 255 / 0.82);
+    border: 1px solid rgb(255 255 255 / 0.9);
+    border-radius: var(--radius-card);
+  }
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass-light {
+      background-color: rgb(255 255 255 / 0.7);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      backdrop-filter: blur(14px) saturate(140%);
+    }
+  }
+
+  /* --- Bento-kaart -------------------------------------------------------- */
+  .bento-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition:
+      box-shadow var(--duration-base) var(--ease-out-soft),
+      border-color var(--duration-base) var(--ease-out-soft),
+      background-color var(--duration-base) var(--ease-out-soft),
+      transform var(--duration-base) var(--ease-out-soft);
+  }
+
+  /* transform op de kaart zelf: geen reflow, geen CLS */
+  .bento-card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-border-strong);
+    transform: translateY(-3px);
+  }
+
+  .bento-card.on-dark {
+    background-color: rgb(255 255 255 / 0.05);
+    border-color: var(--border-inverse);
+    box-shadow: none;
+  }
+
+  .bento-card.on-dark:hover {
+    background-color: rgb(255 255 255 / 0.09);
+    border-color: rgb(255 255 255 / 0.24);
+  }
+
+  .eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-primary-700);
+  }
+
+  .on-dark .eyebrow {
+    color: var(--color-primary-400);
+  }
+}
+
+/* ==========================================================================
+   Utilities & motion
+   ========================================================================== */
+
+@layer utilities {
+  .container-page {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: 2rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .container-page {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  /* leesbare regellengte voor lopende tekst (60–75 tekens) */
+  .measure {
+    max-width: 68ch;
+  }
+
+  /* tabulaire cijfers voor stats/timers — voorkomt springen */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Ambient glow achter donkere secties */
+  .glow-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    pointer-events: none;
+  }
+}
+
+/* --- Scroll reveal: stagger (skill motion 7/10) ---------------------------
+   Standaard zichtbaar. Pas als JS de observer aanzet (html.js-reveal) wordt
+   het item verborgen — zonder JS blijft alles gewoon leesbaar. */
+html.js-reveal [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px) scale(0.98);
+  transition:
+    opacity var(--duration-slow) var(--ease-out-soft),
+    transform var(--duration-slow) var(--ease-overshoot);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+html.js-reveal [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+/* Marquee voor de statbalk */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 40s linear infinite;
+}
+
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+/* Pulserende status-indicator */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  70% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: pulse-ring 2.4s var(--ease-out-soft) infinite;
+}
+
+/* Caret voor de roterende hero-tekst */
+@keyframes caret-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  95% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.caret {
+  animation: caret-blink 1.1s steps(1) infinite;
+}
+
+/* ==========================================================================
+   Reduced motion — alles stil, niets verdwijnt
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html.js-reveal [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .marquee-track {
+    animation: none;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
